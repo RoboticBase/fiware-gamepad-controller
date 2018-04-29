@@ -2,9 +2,12 @@
 import os
 import time
 import signal
+from logging import getLogger
 
 import pygame
 from pygame.locals import JOYBUTTONDOWN, JOYBUTTONUP, JOYHATMOTION, JOYAXISMOTION
+
+logger = getLogger(__name__)
 
 class ControllerError(Exception):
     def __init__(self, *args, **kwargs):
@@ -21,27 +24,32 @@ class Controller:
             controller = pygame.joystick.Joystick(0)
             controller.init()
             self.conf = conf
+            logger.info('initialized %s', conf['name'])
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
 
     def describeEvents(self):
+        logger.info('start describing...')
         def callback(event):
             if event.type == JOYBUTTONDOWN:
-                print(f'Button down event, event.button={event.button}')
+                logger.info('Button down event, event.button=%s', event.button)
             elif event.type == JOYBUTTONUP:
-                print(f'Button up event, event.button={event.button}')
+                logger.info('Button up event, event.button=%s', event.button)
             elif event.type == JOYHATMOTION:
-                print(f'Hat event, event.hat={event.hat}, event.value={event.value}')
+                logger.info('Hat event, event.hat=%s, event.value=%s', event.hat, event.value)
             elif event.type == JOYAXISMOTION:
-                print(f'Axis event, event.axis={event.axis}, event.value={event.value}')
+                logger.info('Axis event, event.axis=%s, event.value=%s', event.axis, event.value)
         self.__subscribeEvent(callback)
 
     def publishEvents(self):
+        logger.info('start publishing...')
         def callback(event):
             if event.type == JOYBUTTONDOWN and str(event.button) in self.conf['buttons']:
-                print(f"{self.conf['buttons'][str(event.button)]} is pressed")
+                logger.info('published %s', self.conf['buttons'][str(event.button)])
             elif event.type == JOYHATMOTION and str(event.value) in self.conf['hats']:
-                print(f"{self.conf['hats'][str(event.value)]} is pressed")
+                logger.info('published %s', self.conf['hats'][str(event.value)])
+            else:
+                logger.debug('ignore event, %s', event)
         self.__subscribeEvent(callback)
 
     def __subscribeEvent(self, callback):
@@ -55,5 +63,5 @@ class Controller:
             raise ControllerError('subscribe event error', cause=e)
 
     def __stopLoop(self, signal, frame):
-        print('stop main loop')
+        logger.info('stop main loop')
         exit(0)
