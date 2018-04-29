@@ -12,7 +12,7 @@ class ControllerError(Exception):
         super().__init__(*args, **kwargs)
 
 class Controller:
-    def __init__(self):
+    def __init__(self, conf):
         try:
             os.environ["SDL_VIDEODRIVER"] = "dummy"
             pygame.init()
@@ -20,26 +20,40 @@ class Controller:
             pygame.joystick.init()
             controller = pygame.joystick.Joystick(0)
             controller.init()
+            self.conf = conf
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
 
     def describeEvents(self):
-        signal.signal(signal.SIGINT, self.stopLoop)
+        def callback(event):
+            if event.type == JOYBUTTONDOWN:
+                print(f'Button down event, event.button={event.button}')
+            elif event.type == JOYBUTTONUP:
+                print(f'Button up event, event.button={event.button}')
+            elif event.type == JOYHATMOTION:
+                print(f'Hat event, event.hat={event.hat}, event.value={event.value}')
+            elif event.type == JOYAXISMOTION:
+                print(f'Axis event, event.axis={event.axis}, event.value={event.value}')
+        self.__subscribeEvent(callback)
+
+    def publishEvents(self):
+        def callback(event):
+            if event.type == JOYBUTTONDOWN and str(event.button) in self.conf['buttons']:
+                print(f"{self.conf['buttons'][str(event.button)]} is pressed")
+            elif event.type == JOYHATMOTION and str(event.value) in self.conf['hats']:
+                print(f"{self.conf['hats'][str(event.value)]} is pressed")
+        self.__subscribeEvent(callback)
+
+    def __subscribeEvent(self, callback):
+        signal.signal(signal.SIGINT, self.__stopLoop)
         try:
             while True:
                 for event in pygame.event.get():
-                    if event.type == JOYBUTTONDOWN:
-                        print(f'Button down event, event.button={event.button}')
-                    elif event.type == JOYBUTTONUP:
-                        print(f'Button up event, event.button={event.button}')
-                    elif event.type == JOYHATMOTION:
-                        print(f'Hat event, event.hat={event.hat}, event.value={event.value}')
-                    elif event.type == JOYAXISMOTION:
-                        print(f'Axis event, event.axis={event.axis}, event.value={event.value}')
+                    callback(event)
                 time.sleep(0.1)
         except pygame.error as e:
-            raise ControllerError('subscribe error', cause=e)
+            raise ControllerError('subscribe event error', cause=e)
 
-    def stopLoop(self, signal, frame):
+    def __stopLoop(self, signal, frame):
         print('stop main loop')
         exit(0)

@@ -1,0 +1,11 @@
+# FUJIWORK PXKWCR
+buttons:
+  "0": "triangle"
+  "1": "circle"
+  "2": "cross"
+  "3": "square"
+hats:
+  "(0, 1)": "up"
+  "(0, -1)": "down"
+  "(1, 0)": "right"
+  "(-1, 0)": "left"
