@@ -6,6 +6,8 @@ from logging import getLogger
 
 import yaml
 
+from box import Box
+
 from src.controller import Controller, ControllerError
 
 logger = getLogger(__name__)
@@ -50,7 +52,7 @@ def main(args):
     logger.info('run script using %s.yaml', args.type)
     try:
         with open(f'./conf/{args.type}.yaml', 'r') as f:
-            conf = yaml.load(f)
+            conf = Box(yaml.load(f), frozen_box=True)
             controller = Controller(conf)
             if args.describe:
                 controller.describeEvents()

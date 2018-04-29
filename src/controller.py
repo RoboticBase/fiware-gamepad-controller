@@ -7,6 +7,8 @@ from logging import getLogger
 import pygame
 from pygame.locals import JOYBUTTONDOWN, JOYBUTTONUP, JOYHATMOTION, JOYAXISMOTION
 
+from src.utils import findItem
+
 logger = getLogger(__name__)
 
 class ControllerError(Exception):
@@ -24,7 +26,7 @@ class Controller:
             controller = pygame.joystick.Joystick(0)
             controller.init()
             self.conf = conf
-            logger.info('initialized %s', conf['name'])
+            logger.info('initialized %s', conf.name)
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
 
@@ -44,10 +46,15 @@ class Controller:
     def publishEvents(self):
         logger.info('start publishing...')
         def callback(event):
-            if event.type == JOYBUTTONDOWN and str(event.button) in self.conf['buttons']:
-                logger.info('published %s', self.conf['buttons'][str(event.button)])
-            elif event.type == JOYHATMOTION and str(event.value) in self.conf['hats']:
-                logger.info('published %s', self.conf['hats'][str(event.value)])
+            if event.type == JOYBUTTONDOWN:
+                item = findItem(self.conf.controller.buttons, lambda item: item.key == event.button)
+                if item:
+                    logger.info('published %s', item.value)
+            elif event.type == JOYHATMOTION:
+                item = findItem(self.conf.controller.hats,
+                                lambda item: item.x == event.value[0] and item.y == event.value[1])
+                if item:
+                    logger.info('published %s', item.value)
             else:
                 logger.debug('ignore event, %s', event)
         self.__subscribeEvent(callback)
