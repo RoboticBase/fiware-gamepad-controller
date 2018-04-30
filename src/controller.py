@@ -9,7 +9,7 @@ from pygame.locals import JOYBUTTONDOWN, JOYBUTTONUP, JOYHATMOTION, JOYAXISMOTIO
 
 import paho.mqtt.client as mqtt
 
-from src.utils import findItem
+from src.utils import find_item
 
 logger = getLogger(__name__)
 
@@ -52,7 +52,7 @@ class Controller:
             self.__client.loop_start()
         return self.__client
 
-    def describeEvents(self):
+    def describe_events(self):
         logger.info('start describing...')
         def callback(event):
             if event.type == JOYBUTTONDOWN:
@@ -63,34 +63,34 @@ class Controller:
                 logger.info('Hat event, event.hat=%s, event.value=%s', event.hat, event.value)
             elif event.type == JOYAXISMOTION:
                 logger.info('Axis event, event.axis=%s, event.value=%s', event.axis, event.value)
-        self.__subscribeEvent(callback)
+        self.__subscribe_events(callback)
 
-    def publishEvents(self):
+    def publish_events(self):
         logger.info('start publishing...')
         def callback(event):
             if event.type == JOYBUTTONDOWN:
-                item = findItem(self.__conf.controller.buttons, lambda item: item.key == event.button)
+                item = find_item(self.__conf.controller.buttons, lambda item: item.key == event.button)
                 if item:
                     self.__publish_mqtt(item.value)
             elif event.type == JOYHATMOTION:
-                item = findItem(self.__conf.controller.hats,
+                item = find_item(self.__conf.controller.hats,
                                 lambda item: item.x == event.value[0] and item.y == event.value[1])
                 if item:
                     self.__publish_mqtt(item.value)
             else:
                 logger.debug('ignore event, %s', event)
-        self.__subscribeEvent(callback)
+        self.__subscribe_events(callback)
 
     def __publish_mqtt(self, payload):
-        topic = findItem(self.__conf.mqtt.topics, lambda item: item.key == TOPIC_KEY)
+        topic = find_item(self.__conf.mqtt.topics, lambda item: item.key == TOPIC_KEY)
         if topic:
             self.client.publish(topic.value, payload)
             logger.info('published "%s" to "%s"', payload, topic.value)
         else:
             logger.warning('no topic found, key=%s', TOPIC_KEY)
 
-    def __subscribeEvent(self, callback):
-        signal.signal(signal.SIGINT, self.__stopLoop)
+    def __subscribe_events(self, callback):
+        signal.signal(signal.SIGINT, self.__stop_loop)
         try:
             while True:
                 for event in pygame.event.get():
@@ -99,7 +99,7 @@ class Controller:
         except pygame.error as e:
             raise ControllerError('subscribe event error', cause=e)
 
-    def __stopLoop(self, signal, frame):
+    def __stop_loop(self, signal, frame):
         if self.__client is not None:
             self.__client.loop_stop()
             self.__client.disconnect()

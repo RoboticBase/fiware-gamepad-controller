@@ -20,8 +20,8 @@ def parse():
     parser.add_argument('--debug', action='store_true', default=False, help='show debug log')
     return parser.parse_args()
 
-def setUpLogging(debug):
-    loglevel = 'INFO' if not debug else 'DEBUG'
+def setup_logging(debug):
+    log_level = 'INFO' if not debug else 'DEBUG'
 
     logging.config.dictConfig({
         'version': 1,
@@ -42,7 +42,7 @@ def setUpLogging(debug):
         },
         'loggers': {
             '': {
-                'level': loglevel,
+                'level': log_level,
                 'handlers': ['console'],
             }
         }
@@ -55,9 +55,9 @@ def main(args):
             conf = Box(yaml.load(f), frozen_box=True)
             controller = Controller(conf)
             if args.describe:
-                controller.describeEvents()
+                controller.describe_events()
             else:
-                controller.publishEvents()
+                controller.publish_events()
     except ControllerError as e:
         logger.exception('%s, %s', e.cause, e)
     except Exception as e:
@@ -67,5 +67,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse()
-    setUpLogging(args.debug)
+    setup_logging(args.debug)
     main(args)

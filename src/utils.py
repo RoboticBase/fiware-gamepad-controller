@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-def findItem(obj, cond):
+def find_item(obj, cond):
     if not isinstance(obj, (tuple, list,)):
         return None
     if not callable(cond):
