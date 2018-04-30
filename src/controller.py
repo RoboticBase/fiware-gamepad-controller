@@ -29,14 +29,19 @@ class Controller:
             pygame.joystick.init()
             controller = pygame.joystick.Joystick(0)
             controller.init()
+
             self.__conf = conf
             self.__client = None
+            self.__button_items = dict()
+            self.__hat_items = dict()
+            self.__topics = dict()
+
             logger.info('initialized %s', conf.name)
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
 
     @property
-    def client(self):
+    def __mqtt_client(self):
         if self.__client is None:
             def __on_connect(client, userdata, flags, response_code):
                 logger.info('connected mqtt broker[%s:%d], response_code=%d',
@@ -51,6 +56,25 @@ class Controller:
             self.__client.connect(self.__conf.mqtt.host, port=self.__conf.mqtt.port, keepalive=60)
             self.__client.loop_start()
         return self.__client
+
+    def __find_button_item(self, button_id):
+        if button_id not in self.__button_items:
+            item = find_item(self.__conf.controller.buttons, lambda item: item.key == button_id)
+            self.__button_items[button_id] = item
+        return self.__button_items[button_id]
+
+    def __find_hat_item(self, hat_id):
+        if hat_id not in self.__hat_items:
+            item = find_item(self.__conf.controller.hats,
+                            lambda item: item.x == hat_id[0] and item.y == hat_id[1])
+            self.__hat_items[hat_id] = item
+        return self.__hat_items[hat_id]
+
+    def __find_topic(self, topic_id):
+        if topic_id not in self.__topics:
+            item = find_item(self.__conf.mqtt.topics, lambda item: item.key == topic_id)
+            self.__topics[topic_id] = item
+        return self.__topics[topic_id]
 
     def describe_events(self):
         logger.info('start describing...')
@@ -68,23 +92,18 @@ class Controller:
     def publish_events(self):
         logger.info('start publishing...')
         def callback(event):
-            if event.type == JOYBUTTONDOWN:
-                item = find_item(self.__conf.controller.buttons, lambda item: item.key == event.button)
-                if item:
-                    self.__publish_mqtt(item.value)
-            elif event.type == JOYHATMOTION:
-                item = find_item(self.__conf.controller.hats,
-                                lambda item: item.x == event.value[0] and item.y == event.value[1])
-                if item:
-                    self.__publish_mqtt(item.value)
+            if event.type == JOYBUTTONDOWN and self.__find_button_item(event.button):
+                self.__publish_mqtt(self.__find_button_item(event.button).value)
+            elif event.type == JOYHATMOTION and self.__find_hat_item(event.value):
+                self.__publish_mqtt(self.__find_hat_item(event.value).value)
             else:
                 logger.debug('ignore event, %s', event)
         self.__subscribe_events(callback)
 
     def __publish_mqtt(self, payload):
-        topic = find_item(self.__conf.mqtt.topics, lambda item: item.key == TOPIC_KEY)
+        topic = self.__find_topic(TOPIC_KEY)
         if topic:
-            self.client.publish(topic.value, payload)
+            self.__mqtt_client.publish(topic.value, payload)
             logger.info('published "%s" to "%s"', payload, topic.value)
         else:
             logger.warning('no topic found, key=%s', TOPIC_KEY)
