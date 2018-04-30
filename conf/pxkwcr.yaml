@@ -22,3 +22,9 @@ controller:
     - x: -1
       y: 0
       value: "left"
+mqtt:
+  host: "192.168.0.3"
+  port: 1883
+  topics:
+    - key: "controller"
+      value: "/controller/cmd"
