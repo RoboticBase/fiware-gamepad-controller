@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import ssl
 import time
 import signal
 from logging import getLogger
@@ -52,6 +53,11 @@ class Controller:
             self.__client = mqtt.Client(protocol=mqtt.MQTTv311)
             self.__client.on_connect = __on_connect
             self.__client.on_disconnect = __on_disconnect
+
+            if 'cafile' in self.__conf.mqtt and os.path.isfile(self.__conf.mqtt.cafile):
+                self.__client.tls_set(self.__conf.mqtt.cafile, tls_version=ssl.PROTOCOL_TLSv1_2)
+            if 'username' in self.__conf.mqtt and 'password' in self.__conf.mqtt:
+                self.__client.username_pw_set(self.__conf.mqtt.username, self.__conf.mqtt.password)
 
             self.__client.connect(self.__conf.mqtt.host, port=self.__conf.mqtt.port, keepalive=60)
             self.__client.loop_start()

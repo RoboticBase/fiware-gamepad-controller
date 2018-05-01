@@ -23,8 +23,11 @@ controller:
       y: 0
       value: "left"
 mqtt:
-  host: "192.168.0.3"
-  port: 1883
+  host: "mqtt.nmatsui.work"
+  port: 8883
+  cafile: "secrets/ca.crt"
+  username: "raspberrypi"
+  password: ""
   topics:
     - key: "controller"
       value: "/controller/cmd"
