@@ -27,7 +27,7 @@ mqtt:
   port: 8883
   cafile: "secrets/ca.crt"
   username: "raspberrypi"
-  password: ""
+  password: "<<password_of_raspberrypi>>"
   topics:
     - key: "controller"
-      value: "/controller/cmd"
+      value: "/gamepad/gamepad-1/attrs"

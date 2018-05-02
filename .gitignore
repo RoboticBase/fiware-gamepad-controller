@@ -1,3 +1,4 @@
 .python-version
 *.py[co]
 secrets/*
+conf/pxkwcr.yaml
