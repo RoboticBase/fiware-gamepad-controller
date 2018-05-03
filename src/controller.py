@@ -101,7 +101,7 @@ class Controller:
             if event.type == JOYBUTTONDOWN and self.__find_button_item(event.button):
                 self.__publish_mqtt(f'button|{self.__find_button_item(event.button).value}')
             elif event.type == JOYHATMOTION and self.__find_hat_item(event.value):
-                self.__publish_mqtt(f'hat|{self.__find_hat_item(event.value).value}')
+                self.__publish_mqtt(f'button|{self.__find_hat_item(event.value).value}')
             else:
                 logger.debug('ignore event, %s', event)
         self.__subscribe_events(callback)
