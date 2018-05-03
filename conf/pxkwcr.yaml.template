@@ -30,4 +30,4 @@ mqtt:
   password: "<<password_of_raspberrypi>>"
   topics:
     - key: "controller"
-      value: "/gamepad/gamepad-1/attrs"
+      value: "/demo1/gamepad/attrs"
