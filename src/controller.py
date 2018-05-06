@@ -3,6 +3,7 @@ import os
 import ssl
 import time
 import signal
+from datetime import datetime, timezone
 from logging import getLogger
 
 import pygame
@@ -98,10 +99,11 @@ class Controller:
     def publish_events(self):
         logger.info('start publishing...')
         def callback(event):
+            now = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
             if event.type == JOYBUTTONDOWN and self.__find_button_item(event.button):
-                self.__publish_mqtt(f'button|{self.__find_button_item(event.button).value}')
+                self.__publish_mqtt(f'{now}|button|{self.__find_button_item(event.button).value}')
             elif event.type == JOYHATMOTION and self.__find_hat_item(event.value):
-                self.__publish_mqtt(f'button|{self.__find_hat_item(event.value).value}')
+                self.__publish_mqtt(f'{now}|button|{self.__find_hat_item(event.value).value}')
             else:
                 logger.debug('ignore event, %s', event)
         self.__subscribe_events(callback)
