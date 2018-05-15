@@ -1,0 +1,32 @@
+name: "FUJIWORK PXKWCR Controller"
+controller:
+  buttons:
+    - key: 0
+      value: "triangle"
+    - key: 1
+      value: "circle"
+    - key: 2
+      value: "cross"
+    - key: 3
+      value: "square"
+  hats:
+    - x: 0
+      y: 1
+      value: "up"
+    - x: 0
+      y: -1
+      value: "down"
+    - x: 1
+      y: 0
+      value: "right"
+    - x: -1
+      y: 0
+      value: "left"
+mqtt:
+  host: "MacBook-Pro.local"
+  port: 1883
+  username: "raspberrypi"
+  password: "<<password_of_raspberrypi>>"
+  topics:
+    - key: "controller"
+      value: "/demo1/gamepad/attrs"
