@@ -23,11 +23,11 @@ controller:
       y: 0
       value: "left"
 mqtt:
-  host: "mqtt.nmatsui.work"
+  host: "${MQTT_HOST}"
   port: 8883
   cafile: "secrets/ca.crt"
   username: "raspberrypi"
-  password: "<<password_of_raspberrypi>>"
+  password: "${RASPI_PASSWORD}"
   topics:
     - key: "controller"
       value: "/demo1/gamepad/attrs"

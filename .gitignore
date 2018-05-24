@@ -1,5 +1,5 @@
 .python-version
 *.py[co]
 secrets/*
-conf/pxkwcr.yaml
+conf/pxkwcr-azure.yaml
 conf/pxkwcr-minikube.yaml
