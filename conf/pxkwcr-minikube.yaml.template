@@ -23,10 +23,10 @@ controller:
       y: 0
       value: "left"
 mqtt:
-  host: "MacBook-Pro.local"
+  host: "${MQTT_HOST}"
   port: 1883
   username: "raspberrypi"
-  password: "<<password_of_raspberrypi>>"
+  password: "${RASPI_RASSWORD}"
   topics:
     - key: "controller"
       value: "/demo1/gamepad/attrs"
