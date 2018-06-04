@@ -15,9 +15,9 @@ logger = getLogger(__name__)
 
 def parse():
     parser = argparse.ArgumentParser(description='operate geme controller')
-    parser.add_argument('type', type=str, nargs='?', help='controller type',
-                        const='pxkwcr-azure', default='pxkwcr-azure', choices=['pxkwcr-azure', 'pxkwcr-minikube', ])
-    parser.add_argument('--describe', action='store_true', default=False, help='describe event id')
+    parser.add_argument('type', type=str, nargs='?', help='configuration type',
+                        const='pxkwcr-azure', default='pxkwcr-azure')
+    parser.add_argument('--describe', action='store_true', default=False, help='describe event of gamepad')
     parser.add_argument('--debug', action='store_true', default=False, help='show debug log')
     return parser.parse_args()
 
