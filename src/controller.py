@@ -17,10 +17,12 @@ logger = getLogger(__name__)
 
 TOPIC_KEY = 'controller'
 
+
 class ControllerError(Exception):
     def __init__(self, *args, **kwargs):
         self.cause = kwargs.pop('cause') if 'cause' in kwargs else None
         super().__init__(*args, **kwargs)
+
 
 class Controller:
     def __init__(self, conf):
@@ -38,6 +40,8 @@ class Controller:
             self.__hat_items = dict()
             self.__topics = dict()
 
+            self._is_stop = False
+
             logger.info('initialized %s', conf.name)
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
@@ -45,9 +49,11 @@ class Controller:
     @property
     def __mqtt_client(self):
         if self.__client is None:
+
             def __on_connect(client, userdata, flags, response_code):
                 logger.info('connected mqtt broker[%s:%d], response_code=%d',
                             self.__conf.mqtt.host, self.__conf.mqtt.port, response_code)
+
             def __on_disconnect(client, userdata, response_code):
                 logger.info('disconnected mqtt broker, response_code=%d', response_code)
 
@@ -73,7 +79,7 @@ class Controller:
     def __find_hat_item(self, hat_id):
         if hat_id not in self.__hat_items:
             item = find_item(self.__conf.controller.hats,
-                            lambda item: item.x == hat_id[0] and item.y == hat_id[1])
+                             lambda item: item.x == hat_id[0] and item.y == hat_id[1])
             self.__hat_items[hat_id] = item
         return self.__hat_items[hat_id]
 
@@ -85,6 +91,7 @@ class Controller:
 
     def describe_events(self):
         logger.info('start describing...')
+
         def callback(event):
             if event.type == JOYBUTTONDOWN:
                 logger.info('Button down event, event.button=%s', event.button)
@@ -95,9 +102,11 @@ class Controller:
             elif event.type == JOYAXISMOTION:
                 logger.info('Axis event, event.axis=%s, event.value=%s', event.axis, event.value)
         self.__subscribe_events(callback)
+        logger.info('stop describing...')
 
     def publish_events(self):
         logger.info('start publishing...')
+
         def callback(event):
             now = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f%z')
             if event.type == JOYBUTTONDOWN and self.__find_button_item(event.button):
@@ -105,8 +114,10 @@ class Controller:
             elif event.type == JOYHATMOTION and self.__find_hat_item(event.value):
                 self.__publish_mqtt(f'{now}|button|{self.__find_hat_item(event.value).value}')
             else:
-                logger.debug('ignore event, %s', event)
+                logger.debug('ignore event, %s', str(event))
         self.__subscribe_events(callback)
+
+        logger.info('stop publishing...')
 
     def __publish_mqtt(self, payload):
         topic = self.__find_topic(TOPIC_KEY)
@@ -117,19 +128,24 @@ class Controller:
             logger.warning('no topic found, key=%s', TOPIC_KEY)
 
     def __subscribe_events(self, callback):
-        signal.signal(signal.SIGINT, self.__stop_loop)
         try:
-            while True:
+            signal.signal(signal.SIGINT, self.__stop_loop)
+            signal.signal(signal.SIGTERM, self.__stop_loop)
+        except ValueError:
+            pass
+
+        try:
+            while not self._is_stop:
                 for event in pygame.event.get():
                     callback(event)
                 time.sleep(0.1)
         except pygame.error as e:
             raise ControllerError('subscribe event error', cause=e)
+        finally:
+            if self.__client is not None:
+                self.__client.loop_stop()
+                self.__client.disconnect()
 
     def __stop_loop(self, signal, frame):
-        if self.__client is not None:
-            self.__client.loop_stop()
-            self.__client.disconnect()
-
+        self._is_stop = True
         logger.info('stop main loop')
-        exit(0)
