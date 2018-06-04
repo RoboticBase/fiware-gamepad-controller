@@ -1,0 +1,4 @@
+flake8>=3.5
+pytest>=3.6
+pytest-mock>=1.10
+pytest-freezegun>=0.2

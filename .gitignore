@@ -1,5 +1,6 @@
 .python-version
 *.py[co]
+.pytest_cache
 secrets/*
 conf/pxkwcr-azure.yaml
 conf/pxkwcr-minikube.yaml
