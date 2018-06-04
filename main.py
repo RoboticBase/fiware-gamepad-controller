@@ -12,41 +12,28 @@ from src.controller import Controller, ControllerError
 
 logger = getLogger(__name__)
 
+
 def parse():
     parser = argparse.ArgumentParser(description='operate geme controller')
     parser.add_argument('type', type=str, nargs='?', help='controller type',
-                        const='pxkwcr-azure', default='pxkwcr-azure', choices=['pxkwcr-azure', 'pxkwcr-minikube',])
+                        const='pxkwcr-azure', default='pxkwcr-azure', choices=['pxkwcr-azure', 'pxkwcr-minikube', ])
     parser.add_argument('--describe', action='store_true', default=False, help='describe event id')
     parser.add_argument('--debug', action='store_true', default=False, help='show debug log')
     return parser.parse_args()
 
-def setup_logging(debug):
-    log_level = 'INFO' if not debug else 'DEBUG'
 
-    logging.config.dictConfig({
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'default': {
-                'format': '%(asctime)s [%(levelname)7s] %(name)s - %(message)s',
-                'datefmt': '%Y/%m/%d %H:%M:%S',
-            }
-        },
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-                'level': 'DEBUG',
-                'formatter': 'default',
-                'stream': 'ext://sys.stdout',
-            }
-        },
-        'loggers': {
-            '': {
-                'level': log_level,
-                'handlers': ['console'],
-            }
-        }
-    })
+def setup_logging(debug):
+    try:
+        with open('./conf/logging.yaml', 'r') as f:
+            y = yaml.load(f)
+            logging.config.dictConfig(y)
+            if debug:
+                for handler in getLogger().handlers:
+                    if handler.get_name() in 'console':
+                        handler.setLevel('DEBUG')
+    except FileNotFoundError:
+        pass
+
 
 def main(args):
     logger.info('run script using %s.yaml', args.type)
@@ -64,6 +51,7 @@ def main(args):
         logger.exception(e)
     finally:
         logger.info('stop script')
+
 
 if __name__ == '__main__':
     args = parse()
