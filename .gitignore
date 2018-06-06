@@ -2,5 +2,6 @@
 *.py[co]
 .pytest_cache
 secrets/*
+!secrets/.gitkeep
 conf/pxkwcr-azure.yaml
 conf/pxkwcr-minikube.yaml
