@@ -13,6 +13,8 @@ This applicaton subscribes for gamepad events using [pygame](https://www.pygame.
 ## Install libraries
 
 ```bash
+$ git clone https://github.com/tech-sketch/fiware-gamepad-controller.git
+$ cd fiware-gamepad-controller
 $ pip install -r requirements/common.txt
 ```
 
