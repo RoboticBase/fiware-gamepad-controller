@@ -10,9 +10,17 @@ This applicaton subscribes for gamepad events using [pygame](https://www.pygame.
 
 **python 3.6 or higher**
 
+## Install libraries
+
+```bash
+$ pip install -r requirements/common.txt
+```
+
 ## How to Run
 
-`python ./main.py [-h] [--describe] [--debug] [type]`
+```bash
+$ python ./main.py [-h] [--describe] [--debug] [type]
+```
 
 |option|description|
 |:--|:--|
