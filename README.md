@@ -1,6 +1,8 @@
 # fiware-gamepad-controller
 This python application subscribes for gamepad events, and publishes a command corresponding to the received event to MQTT.
 
+[![TravisCI Status](https://travis-ci.org/tech-sketch/fiware-gamepad-controller.svg?branch=master)](https://travis-ci.org/tech-sketch/fiware-gamepad-controller)
+
 ## Description
 This python application works on Raspberry Pi 2 or higher.
 
