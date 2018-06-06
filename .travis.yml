@@ -1,0 +1,9 @@
+language: python
+python:
+  - 3.6
+install:
+  - pip install -r app/requirements/common.txt
+  - pip install -r app/requirements/develop.txt
+script:
+  - flake8 .
+  - pytest .
