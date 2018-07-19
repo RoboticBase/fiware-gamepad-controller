@@ -44,7 +44,7 @@ def main(args):
             if args.describe:
                 controller.describe_events()
             else:
-                controller.publish_events()
+                controller.connect().publish_events()
     except ControllerError as e:
         logger.exception('%s, %s', e.cause, e)
     except Exception as e:

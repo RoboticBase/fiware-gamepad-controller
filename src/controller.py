@@ -35,7 +35,6 @@ class Controller:
             controller.init()
 
             self.__conf = conf
-            self.__client = None
             self.__button_items = dict()
             self.__hat_items = dict()
             self.__topics = dict()
@@ -46,29 +45,28 @@ class Controller:
         except pygame.error as e:
             raise ControllerError('init error', cause=e)
 
-    @property
-    def __mqtt_client(self):
-        if self.__client is None:
+        self.__mqtt_client = None
 
-            def __on_connect(client, userdata, flags, response_code):
-                logger.info('connected mqtt broker[%s:%d], response_code=%d',
-                            self.__conf.mqtt.host, self.__conf.mqtt.port, response_code)
+    def connect(self):
+        def __on_connect(client, userdata, flags, response_code):
+            logger.info('connected mqtt broker[%s:%d], response_code=%d',
+                        self.__conf.mqtt.host, self.__conf.mqtt.port, response_code)
 
-            def __on_disconnect(client, userdata, response_code):
-                logger.info('disconnected mqtt broker, response_code=%d', response_code)
+        def __on_disconnect(client, userdata, response_code):
+            logger.info('disconnected mqtt broker, response_code=%d', response_code)
 
-            self.__client = mqtt.Client(protocol=mqtt.MQTTv311)
-            self.__client.on_connect = __on_connect
-            self.__client.on_disconnect = __on_disconnect
+        self.__mqtt_client = mqtt.Client(protocol=mqtt.MQTTv311)
+        self.__mqtt_client.on_connect = __on_connect
+        self.__mqtt_client.on_disconnect = __on_disconnect
 
-            if 'cafile' in self.__conf.mqtt and os.path.isfile(self.__conf.mqtt.cafile):
-                self.__client.tls_set(self.__conf.mqtt.cafile, tls_version=ssl.PROTOCOL_TLSv1_2)
-            if 'username' in self.__conf.mqtt and 'password' in self.__conf.mqtt:
-                self.__client.username_pw_set(self.__conf.mqtt.username, self.__conf.mqtt.password)
+        if 'cafile' in self.__conf.mqtt and os.path.isfile(self.__conf.mqtt.cafile):
+            self.__mqtt_client.tls_set(self.__conf.mqtt.cafile, tls_version=ssl.PROTOCOL_TLSv1_2)
+        if 'username' in self.__conf.mqtt and 'password' in self.__conf.mqtt:
+            self.__mqtt_client.username_pw_set(self.__conf.mqtt.username, self.__conf.mqtt.password)
 
-            self.__client.connect(self.__conf.mqtt.host, port=self.__conf.mqtt.port, keepalive=60)
-            self.__client.loop_start()
-        return self.__client
+        self.__mqtt_client.connect(self.__conf.mqtt.host, port=self.__conf.mqtt.port, keepalive=60)
+        self.__mqtt_client.loop_start()
+        return self
 
     def __find_button_item(self, button_id):
         if button_id not in self.__button_items:
@@ -142,9 +140,9 @@ class Controller:
         except pygame.error as e:
             raise ControllerError('subscribe event error', cause=e)
         finally:
-            if self.__client is not None:
-                self.__client.loop_stop()
-                self.__client.disconnect()
+            if self.__mqtt_client is not None:
+                self.__mqtt_client.loop_stop()
+                self.__mqtt_client.disconnect()
 
     def __stop_loop(self, signal, frame):
         self._is_stop = True
