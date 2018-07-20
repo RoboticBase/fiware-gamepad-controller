@@ -30,4 +30,4 @@ mqtt:
   password: "${RASPI_PASSWORD}"
   topics:
     - key: "controller"
-      value: "/demo1/gamepad/attrs"
+      value: "/gamepad/gamepad/attrs"
