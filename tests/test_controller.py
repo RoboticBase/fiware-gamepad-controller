@@ -146,6 +146,8 @@ class TestController:
 
         mocked_pygame.event.get.side_effect = mocked_get
 
+        controller.connect()
+
         t1 = threading.Thread(target=controller.publish_events)
         t2 = threading.Thread(target=stop)
         t1.start()
@@ -343,7 +345,7 @@ class TestController:
         mocked_mqtt.Client.return_value.connect.side_effect = OSError
 
         with pytest.raises(OSError):
-            controller.publish_events()
+            controller.connect()
 
         mocked_mqtt.Client.assert_called_once_with(protocol=mocked_mqtt.MQTTv311)
         mocked_client = mocked_mqtt.Client.return_value
@@ -351,5 +353,5 @@ class TestController:
         mocked_client.username_pw_set.assert_not_called()
         mocked_client.connect.assert_called_once_with('mqtt.example.com', port=8883, keepalive=60)
         mocked_client.loop_start.assert_not_called()
-        mocked_client.loop_stop.assert_called_once_with()
-        mocked_client.disconnect.assert_called_once_with()
+        mocked_client.loop_stop.assert_not_called()
+        mocked_client.disconnect.assert_not_called()
